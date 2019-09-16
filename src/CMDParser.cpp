@@ -1,8 +1,7 @@
 #ifndef CMDPARSER_CPP
 #define CMDPARSER_CPP
 
-#include "../include/CMDParser.h"
-#include <exception>
+#include "CMDParser.h"
 
 CMDParser::CMDParser() {
     m_params.resize (0);
@@ -17,7 +16,7 @@ bool CMDParser::parse (int argc, char* argv[]) {
     std::sort (m_params.begin(), m_params.end(), [] (auto A, auto B) {
         return A._flag < B._flag;
     });
-    for (size_t i = 1; i < argc; i++) {
+    for (int i = 1; i < argc; i++) {
         auto pos = std::find (m_params.begin(), m_params.end(), std::string (argv[i]));
         if (pos == std::end (m_params)) {
             printf ("The provided flag (%s) is invalid\n", argv[i]);
@@ -56,7 +55,7 @@ bool CMDParser::parse (int argc, char* argv[]) {
                         if (pos->_size > 0) {
                             for (size_t j = 0; j < pos->_size; j++) {
                                 i++;
-                                if (argv[i] == "true" || argv[i] == "1") {
+                                if (strcmp(argv[i], "true") == 0 || strcmp(argv[i], "1") == 0) {
                                     dest[j] = true;
                                 } else {
                                     dest[j] = false;

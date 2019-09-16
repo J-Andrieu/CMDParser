@@ -2,6 +2,8 @@
 #define CMDPARSER_H
 
 #include <string>
+#include <cstring>
+#include <exception>
 #include <vector>
 #include <algorithm>
 #include <type_traits>
