@@ -39,5 +39,10 @@ int main(int argc, char* argv[]) {
         std::cout << "bool[" << i << "] = " << (boolList[i] == true ? "true" : "false") << std::endl;
     }
 
+    delete[] someStuff;
+    someStuff = nullptr;
+    delete[] boolList;
+    boolList = nullptr;
+
     return 0;
 }
