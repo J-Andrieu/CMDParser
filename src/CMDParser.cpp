@@ -5,7 +5,7 @@
 
 CMDParser::CMDParser() {
     m_params.resize (0);
-    bindVar<bool> ("-h", &help, 0, "Displays the help page");
+    bindVar<bool> ("-h", help, 0, "Displays the help page");
 }
 
 bool operator== (CMDParser::_container A, std::string B) {
@@ -27,9 +27,27 @@ bool CMDParser::parse (int argc, char* argv[]) {
             return false;
         }
 
+        if (pos->_lenType == DEFINED_LENGTH) {
+            try {
+                *(pos->_newLen) = std::stoi(argv[++i]);
+            } catch (std::exception& e) {
+                printf("An invalid parameter (%s) was passed to %s resulting in the following exception:\n%s\n", argv[i], pos->_flag.c_str(), e.what());
+                printHelp();
+                return false;
+            }
+            pos->_size = *(pos->_newLen);
+        } else if (pos->_lenType == VARIABLE_LENGTH) {
+            pos->_size = argc - i - 1;
+            *(pos->_newLen) = pos->_size;
+        }
+
         try {
             switch (pos->_type) {
                 case INT: {
+                        if (pos->_lenType != STATIC_LENGTH) {
+                            ((int**) pos->_dest)[0] = new int[pos->_size];
+                            pos->_dest = (void*) ((int**)pos->_dest)[0];
+                        }
                         int* dest = (int*) pos->_dest;
                         for (size_t j = 0; j < pos->_size; j++) {
                             dest[j] = std::stoi (argv[++i]);
@@ -37,6 +55,10 @@ bool CMDParser::parse (int argc, char* argv[]) {
                     }
                     break;
                 case DOUBLE: {
+                        if (pos->_lenType != STATIC_LENGTH) {
+                            ((double**) pos->_dest)[0] = new double[pos->_size];
+                            pos->_dest = (void*) ((double**)pos->_dest)[0];
+                        }
                         double* dest = (double*) pos->_dest;
                         for (size_t j = 0; j < pos->_size; j++) {
                             dest[j] = std::stof (argv[++i]);
@@ -44,6 +66,10 @@ bool CMDParser::parse (int argc, char* argv[]) {
                     }
                     break;
                 case STRING: {
+                        if (pos->_lenType != STATIC_LENGTH) {
+                            ((std::string**) pos->_dest)[0] = new std::string[pos->_size];
+                            pos->_dest = (void*) ((std::string**)pos->_dest)[0];
+                        }
                         std::string* dest = (std::string*) pos->_dest;
                         for (size_t j = 0; j < pos->_size; j++) {
                             dest[j] = std::string (argv[++i]);
@@ -51,11 +77,15 @@ bool CMDParser::parse (int argc, char* argv[]) {
                     }
                     break;
                 case BOOL: {
+                        if (pos->_lenType != STATIC_LENGTH) {
+                            ((bool**) pos->_dest)[0] = new bool[pos->_size];
+                            pos->_dest = (void*) ((bool**)pos->_dest)[0];
+                        }
                         bool* dest = (bool*) pos->_dest;
                         if (pos->_size > 0) {
                             for (size_t j = 0; j < pos->_size; j++) {
                                 i++;
-                                if (strcmp(argv[i], "true") == 0 || strcmp(argv[i], "1") == 0) {
+                                if (strcmp(argv[i], "true") == 0 || strcmp(argv[i], "1") == 0 || strcmp(argv[i], "t") == 0) {
                                     dest[j] = true;
                                 } else {
                                     dest[j] = false;
@@ -68,7 +98,7 @@ bool CMDParser::parse (int argc, char* argv[]) {
                     break;
             }
         } catch (std::exception& e) {
-            printf("An invalid parameter was passed to %s resulting in the following exception:\n%s\n", pos->_flag.c_str(), e.what());
+            printf("An invalid parameter (%s) was passed to %s resulting in the following exception:\n%s\n", argv[i], pos->_flag.c_str(), e.what());
             printHelp();
             return false;
         }
@@ -79,7 +109,11 @@ bool CMDParser::parse (int argc, char* argv[]) {
 void CMDParser::printHelp() {
     printf ("Displaying Help Page:\n\n");
     for (auto param : m_params) {
-        printf ("%s\t|\t%s (takes %s argument%s)\n", param._flag.c_str(), param._desc.c_str(), (param._size == 0 ? "no" : std::to_string (param._size).c_str()), (param._size == 1 ? "" : "s"));
+        if (param._lenType == STATIC_LENGTH) {
+            printf ("%s\t|\t%s (takes %s argument%s)\n", param._flag.c_str(), param._desc.c_str(), (param._size == 0 ? "no" : std::to_string (param._size).c_str()), (param._size == 1 ? "" : "s"));
+        } else {
+            printf ("%s\t|\t%s %s\n", param._flag.c_str(), param._desc.c_str(), param._lenType == VARIABLE_LENGTH ? "(Will process the rest of the input)" : "(Must define number of elements before list)");
+        }
     }
     printf ("\n");
 }
