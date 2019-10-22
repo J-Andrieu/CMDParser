@@ -1,7 +1,7 @@
 #ifndef CMDPARSER_CPP
 #define CMDPARSER_CPP
 
-#include "CMDParser.h"
+#include "../include/CMDParser.h"
 
 CMDParser::CMDParser() {
     m_params.resize (0);
