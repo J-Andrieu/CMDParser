@@ -108,11 +108,21 @@ bool CMDParser::parse (int argc, char* argv[]) {
 
 void CMDParser::printHelp() {
     printf ("Displaying Help Page:\n\n");
+    int flagPadding = 0;
+    for (auto param : m_params) {
+        if (flagPadding < param._flag.size()) {
+            flagPadding = param._flag.size();
+        }
+    }
+    flagPadding++;
+    flagPadding *= -1;
+    std::string format1 = std::string("% ") + std::to_string(flagPadding) + std::string("s|\t%s (takes %s argument%s)\n");
+    std::string format2 = std::string("% ") + std::to_string(flagPadding) + std::string("s|\t%s %s\n");
     for (auto param : m_params) {
         if (param._lenType == STATIC_LENGTH) {
-            printf ("%s\t|\t%s (takes %s argument%s)\n", param._flag.c_str(), param._desc.c_str(), (param._size == 0 ? "no" : std::to_string (param._size).c_str()), (param._size == 1 ? "" : "s"));
+            printf (format1.c_str(), param._flag.c_str(), param._desc.c_str(), (param._size == 0 ? "no" : std::to_string (param._size).c_str()), (param._size == 1 ? "" : "s"));
         } else {
-            printf ("%s\t|\t%s %s\n", param._flag.c_str(), param._desc.c_str(), param._lenType == VARIABLE_LENGTH ? "(Will process the rest of the input)" : "(Must define number of elements before list)");
+            printf (format2.c_str(), param._flag.c_str(), param._desc.c_str(), param._lenType == VARIABLE_LENGTH ? "(Will process the rest of the input)" : "(Must define number of elements before list)");
         }
     }
     printf ("\n");
