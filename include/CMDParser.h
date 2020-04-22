@@ -53,6 +53,10 @@ public:
 
     bool parse (int argc, char* argv[]);
 
+    //the default is for CMDParser to generate the help menu
+    void setHelpMessage(std::string msg = "");
+    void generateHelp(bool val = true);
+
     void printHelp();
 
 private:
@@ -78,6 +82,8 @@ private:
     std::vector<_container> m_params;
 
     bool help;
+    bool generate_help;
+    std::string custom_help;
 };
 #endif // CMDPARSER_H
 
